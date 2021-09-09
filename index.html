@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+  <title>Jogo da velha</title>
+</head>
+<body>
+
+  <!--<div id="screen1">
+    <button>Assistir players</button>
+    <button>Buscar Partida</button>
+    <button>Jogar Contra Bot</button>
+  </div>-->
+  <div class="container">
+    <h1 id="queme">Você é o X</h1>
+    <div id="game">
+      <button class="btn"></button>
+      <button class="btn selectedYou">X</button>
+      <button class="btn selectedOther">Y</button>
+      <button class="btn selectedYou">X</button>
+      <button class="btn"></button>
+      <button class="btn selectedYou">X</button>
+      <button class="btn selectedOther">Y</button>
+      <button class="btn"></button>
+      <button class="btn selectedOther">Y</button>
+    </div>
+
+    <div id="gameAcoes">
+      <button>Voltar</button>
+      <button>Desistir</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io()
+    var secao = ''
+    let game = {}
+
+
+    // Adiciona eventos 
+    let sizeButton = document.getElementsByClassName('btn').length
+    document.getElementsByClassName('btn')
+    
+    for(let i = 0; i < sizeButton; i++ ) {
+      document.getElementsByClassName('btn')[i].addEventListener('click', (event) => selecionarItem(i))
+    }
+
+    // Evento de clique em um botão
+    function selecionarItem(i) {
+      // Campo vazio e é a vez do jogador
+        if (document.getElementsByClassName('btn')[i].textContent === '' && game.vezAtual === game.voceeo) {
+          document.getElementsByClassName('btn')[i].textContent === game.voceeo
+          console.log('emittt', {i, jogador: game.voceeo, secao})
+          socket.emit('new-click', {i, jogador: game.voceeo, secao})
+        }
+      }
+    // Fim Adiciona eventos 
+
+    // Novo usuário conectado
+    socket.emit('new-player', '')
+    // Recebe a seção que o usuário está conectado e o identificador dele mesmo
+    socket.on('new-player', (data) => {
+      secao = data.secao
+      id = data.id
+    })
+
+    // Servidor encontrou uma seção
+    socket.on('find-session', (data) => {
+      game = data
+
+      // Exibe na tela qual player o usuário é
+      if (data.player1.id === id) {
+        document.getElementById('queme').innerText = `você é o player ${data.player1.boneco}`
+        game.voceeo = data.player1.boneco
+      } else {
+        document.getElementById('queme').innerText = `você é o player ${data.player2.boneco}`
+        game.voceeo = data.player2.boneco
+      }
+    })
+
+    // Alguém fez um clique
+    // Atualiza o tabuleiro e a vez atual
+    socket.on('new-click', (data) => {
+      game.tabuleiro = data.tabuleiro
+      game.vezAtual = data.vezAtual
+    })
+
+    // Renderiza o tabuleiro
+    function renderScreen() {
+      game?.tabuleiro?.map((item, i) => {
+        document.getElementsByClassName('btn')[i].textContent = item
+      })
+
+      requestAnimationFrame(renderScreen)
+    }
+    requestAnimationFrame(renderScreen)
+
+
+  </script>
+</body>
+</html>
