@@ -22,7 +22,6 @@
   cursor: pointer;
 }
 
-
 #screen1 button:hover {
   transform: scale(1.2);
   background-color: white;

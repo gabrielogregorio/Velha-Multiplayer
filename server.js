@@ -6,12 +6,13 @@ const { v4 } = require('uuid');
 const favicon = require('serve-favicon');
 const path = require('path');
 const PORT = process.env.PORT || 3000
+
 const renderPagesController = require('./controllers/renderPagesControllers')
 const {Velha} = require('./model/Velha')
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
-app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
+app.use(favicon(path.join(__dirname, 'public', 'images/favicon.png')));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
@@ -20,7 +21,6 @@ app.use('/', renderPagesController)
 const secoesConectadas = {}
 
 io.on('connection', (socket) => {
-
   socket.on('new-player', () => {
     socket.emit('new-player', {id: socket.id})
   })
@@ -46,9 +46,6 @@ io.on('connection', (socket) => {
       // Retorna os dados de seção a ambos os usuários
       socket.emit('find-session', secoesConectadas[secaoGerada].retornarInstancia())
       socket.broadcast.emit('find-session', secoesConectadas[secaoGerada].retornarInstancia())
-      
-      
-      
     }
   })
 
