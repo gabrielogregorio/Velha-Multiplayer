@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/fila.css">
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
   <title>Jogo da velha</title>
 </head>
 <body>
@@ -14,6 +16,11 @@
     <h1>Buscando fila</h1>
     <span id="contador"></span>
     <button onclick="cancelarFila()" >Cancelar</button>
+  </div>
+
+  <div id="deuvelha">
+    <img src="/velha.png" alt="">
+    <button><a href="/">Voltar e Aceitar</a></button>
   </div>
 
 
@@ -34,8 +41,7 @@
     </div>
 
     <div id="gameAcoes">
-      <button> <a href="/">Voltar</a></button>
-      <button>Desistir</button>
+      <button><a href="/">Voltar</a></button>
     </div>
   </div>
 
@@ -54,7 +60,6 @@
 
     // Adiciona eventos 
     let sizeButton = document.getElementsByClassName('btn').length
-    document.getElementsByClassName('btn')
     
     for(let i = 0; i < sizeButton; i++ ) {
       document.getElementsByClassName('btn')[i]
@@ -146,22 +151,26 @@
           htmlResultadoEVez.innerText = 'Quase, jogou muito!'
         }
       } else if (data.resultado.velha === true) {
-        htmlResultadoEVez.innerText = 'É isso ai, a velha ganhou'
+        document.getElementById('game').style.display = 'none'
+        document.getElementsByClassName('container')[0].style.display = 'none'
+        document.getElementById('deuvelha').style.display = 'flex'
       }
     })
+
+    function renderButtons() {
+      game?.tabuleiro?.map((item, i) => {
+        document.getElementsByClassName('btn')[i].textContent = item
+      })
+    }
 
     // Renderiza o tabuleiro
     function renderScreen() {
 
       if ((game?.resultado?.vitoria === false && game?.resultado?.velha === false ) || (game?.resultado?.vitoria === undefined && game?.resultado?.velha === undefined )) {
-        game?.tabuleiro?.map((item, i) => {
-            document.getElementsByClassName('btn')[i].textContent = item
-        })
+        renderButtons()
         requestAnimationFrame(renderScreen)
       } else {
-        game?.tabuleiro?.map((item, i) => {
-          document.getElementsByClassName('btn')[i].textContent = item
-        })
+        renderButtons()
         if(game?.resultado?.vitoria  === true) {
           //game?.resultado?.jogador
           game?.resultado?.posicoes?.map(pos => {

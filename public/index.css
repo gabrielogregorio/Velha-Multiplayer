@@ -1,5 +1,4 @@
 
-
 #screen1 {
   height: 100%;
   width: 100%;
@@ -21,11 +20,14 @@
   margin: 10px 0;
   border-radius: 20px;
   transition: 0.2s;
+  cursor: pointer;
 }
 
 
 #screen1 button:hover {
   transform: scale(1.2);
+  background-color: white;
+  color: #6611ff;
 }
 
 #screen1 button a {

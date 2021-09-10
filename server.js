@@ -5,10 +5,17 @@ const io = require('socket.io')(http)
 const { v4 } = require('uuid');
 const favicon = require('serve-favicon');
 const path = require('path');
-const { verifyState } = require('./functions')
+const { verifyState } = require('./functions/functions')
+const PORT = process.env.PORT || 3000
+const renderPagesController = require('./controllers/renderPagesControllers')
 
+app.set('view engine', 'ejs')
 app.use(express.static('public'))
 app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
+app.use(express.urlencoded({extended: false}));
+app.use(express.json());
+
+app.use('/', renderPagesController)
 
 
 const secoesConectadas = {}
@@ -100,16 +107,6 @@ io.on('connection', (socket) => {
   })
 })
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html')
-})
-
-app.get('/fila', (req, res) => {
-  res.sendFile(__dirname + '/fila.html')
-})
-
-
-const PORT = process.env.PORT || 3000
 
 http.listen(PORT, () => {
   console.log('server is running!')
