@@ -6,14 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;600;700&display=swap" rel="stylesheet">  <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/fila.css">
   <title>Jogue contra você mesmo!</title>
 </head>
 <body>
   <div id="deu-velha">
-    <img src="/images/velha.png" alt="">
+    <div class="img-velha">
+      <img src="/images/velha.png" alt="">
+    </div>
     <button><a href="/">Voltar e Aceitar</a></button>
   </div>
 
@@ -72,7 +73,7 @@
         infoJogo.innerText = `Agora é a sua vez do ${jogo.vezAtual}`
 
       } else if (jogo.verificarVitoria()) {
-        infoJogo.innerText = 'Parabens, você jogou muito!'
+        infoJogo.innerText = 'Parabens, jogou muito!'
 
       } else if (jogo.verificarVelha()) {
         document.getElementById('jogo').style.display = 'none'

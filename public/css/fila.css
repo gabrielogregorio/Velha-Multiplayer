@@ -122,6 +122,7 @@
 #deu-velha {
   background: linear-gradient(90deg, #11aaff, #7703b9, #ff11aa);
   width: 100%;
+  height: 100%;
   padding: 0;
   margin: 0;
   color: white;
@@ -132,8 +133,14 @@
   display: none;
 }
 
+#deu-velha .img-velha {
+  width: 250px;
+  display: block;
+}
+
+
 #deu-velha img {
-  width: 80%;
+  width: 100%;
   margin: 0 auto;
   animation: velha 1s infinite alternate;
 }
