@@ -3,54 +3,70 @@ const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const { v4 } = require('uuid');
+const favicon = require('serve-favicon');
+const path = require('path');
+const { verifyState } = require('./functions')
+
 app.use(express.static('public'))
+app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
 
-// Seções conectadas
-const secoes = {}
 
+const secoesConectadas = {}
 
 io.on('connection', (socket) => {
 
-  // Usuário conectou ao servidor pela primeira vez
   socket.on('new-player', () => {
-    let encontrouSecao = false
-    let secao = v4()
+    socket.emit('new-player', {id: socket.id})
+  })
 
-    // Percorrer pelas seções para achar alguma com precisando de um 
-    // player 2
-    for(secaoId in secoes) {
-      let player1 = secoes[secaoId].player1
-      let player2 = secoes[secaoId].player2
+  socket.on('send-queue', () => {
+    let encontrouSecao = false
+    let secaoGerada = v4()
+
+    for(secaoId in secoesConectadas) {
+      let player1 = secoesConectadas[secaoId].player1
+      let player2 = secoesConectadas[secaoId].player2
 
       // Seção precisando de um player 2
       if (player2 === undefined) {
         encontrouSecao = true
-        secao = secaoId // Sobrescreve a seção
+        secaoGerada = secaoId // Sobrescreve a seção
 
+        
         // Adiciona o player 2
-        secoes[secaoId].player2 = { id:socket.id, boneco: player1.boneco === 'x' ? 'y' : 'x' }
+        secoesConectadas[secaoId].player2 = {
+          id:socket.id,
+          resultado: {
+            velha:false,
+            vitoria:false
+          },
+          boneco: player1.boneco === 'x' ? 'y' : 'x' }
       }
     }
 
     // Retornar o id da seção e o código do usuário
-    socket.emit('new-player', {secao, id: socket.id})
+    socket.emit('send-queue', {secao:secaoGerada})
 
     // Não tinha seção e o usuário terá que esperar
     if (!encontrouSecao) {
       // Cria uma seção
-      secoes[secao] = {
+      secoesConectadas[secaoGerada] = {
         player1: {id: socket.id, boneco:'x'},
         vezAtual: 'x',
-        tabuleiro: ['', '', '', '', '', '', '', '', '', ]
+        resultado: { vitoria: false, velha: false },
+        tabuleiro: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ]
       }
     } else { // Encontrou uma seção e já pode jogar
 
       // Retorna os dados de seção a ambos os usuários
-      socket.emit('find-session', secoes[secao])
-      socket.broadcast.emit('find-session', secoes[secao])
+      socket.emit('find-session', secoesConectadas[secaoGerada])
+      socket.broadcast.emit('find-session', secoesConectadas[secaoGerada])
     }
   })
 
+  socket.on('cancel-queue', (data) => {
+    delete secoesConectadas[data.secao]
+  }) 
 
   // Um clique foi enviado
   socket.on('new-click', (data) => {
@@ -59,20 +75,24 @@ io.on('connection', (socket) => {
       // Essas informações podem ser manipuladas pelo usuário, mas 
       // Não é o foco por enquanto
       if (
-        secoes[data.secao].tabuleiro[data.i] === '' &&
-        secoes[data.secao].vezAtual === data.jogador) {
+        secoesConectadas[data.secao].tabuleiro[data.i] === ' ' &&
+        secoesConectadas[data.secao].vezAtual === data.jogador && 
+        secoesConectadas[data.secao].resultado.vitoria === false
+        && secoesConectadas[data.secao].resultado.velha === false) {
 
       // Troca a vez atual
-      secoes[data.secao].vezAtual = secoes[data.secao].vezAtual === 'x' ? 'y' : 'x'
+      secoesConectadas[data.secao].vezAtual = secoesConectadas[data.secao].vezAtual === 'x' ? 'y' : 'x'
 
       // Marca a jogada no tabuleiro
-      secoes[data.secao].tabuleiro[data.i] = data.jogador  
+      secoesConectadas[data.secao].tabuleiro[data.i] = data.jogador  
 
       // Verifica o resultado
+      let resultado = verifyState(secoesConectadas[data.secao].tabuleiro)
+      secoesConectadas[data.secao].resultado = resultado
 
       // Envia os dados a ambos os usuários
-      socket.emit('new-click', secoes[data.secao])
-      socket.broadcast.emit('new-click', secoes[data.secao])
+      socket.emit('new-click', secoesConectadas[data.secao])
+      socket.broadcast.emit('new-click', secoesConectadas[data.secao])
     }
   })
 
@@ -83,6 +103,11 @@ io.on('connection', (socket) => {
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html')
 })
+
+app.get('/fila', (req, res) => {
+  res.sendFile(__dirname + '/fila.html')
+})
+
 
 const PORT = process.env.PORT || 3000
 

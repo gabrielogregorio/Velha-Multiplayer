@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/fila.css">
+
+  <title>Jogo da velha</title>
+</head>
+<body>
+  <div id="buscarfila">
+    <h1>Buscando fila</h1>
+    <span id="contador"></span>
+    <button onclick="cancelarFila()" >Cancelar</button>
+  </div>
+
+
+  <div class="container">
+    <h1 id="quem-e-o-jogador"></h1>
+    <h2 id="vez-de-qual-jogador"></h2>
+
+    <div id="game">
+      <button class="btn"></button>
+      <button class="btn">X</button>
+      <button class="btn">Y</button>
+      <button class="btn">X</button>
+      <button class="btn"></button>
+      <button class="btn">X</button>
+      <button class="btn">Y</button>
+      <button class="btn"></button>
+      <button class="btn">Y</button>
+    </div>
+
+    <div id="gameAcoes">
+      <button> <a href="/">Voltar</a></button>
+      <button>Desistir</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io()
+    var secao = ''
+    let game = {}
+    let jogadorEo = ''
+
+    function cancelarFila(){
+      socket.emit('cancel-queue', {secao})
+      window.location.href = '/'
+    }
+
+
+    // Adiciona eventos 
+    let sizeButton = document.getElementsByClassName('btn').length
+    document.getElementsByClassName('btn')
+    
+    for(let i = 0; i < sizeButton; i++ ) {
+      document.getElementsByClassName('btn')[i]
+        .addEventListener('click', (event) => selecionarItem(i))
+    }
+
+    // Evento de clique em um botão
+    function selecionarItem(i) {
+      // Campo vazio e é a vez do jogador
+        if (document.getElementsByClassName('btn')[i].textContent === ' ' && game.vezAtual === game.voceeo) {
+          if(game?.resultado?.vitoria === false && game?.resultado?.velha === false) {
+            document.getElementsByClassName('btn')[i].textContent === game.voceeo
+            socket.emit('new-click', {i, jogador: game.voceeo, secao})
+          }
+        }
+      }
+    // Fim Adiciona eventos 
+
+    // Novo usuário conectado
+    socket.emit('new-player', '')
+    // Recebe a seção que o usuário está conectado e o identificador dele mesmo
+    socket.on('new-player', (data) => {
+      id = data.id
+    })
+
+
+    // Bsucar fila
+    socket.emit('send-queue', '')
+    socket.on('send-queue', (data) => {
+      secao = data.secao
+    })
+    
+
+
+    // Servidor encontrou uma seção
+    socket.on('find-session', (data) => {
+      if (data.player1.id !== id && data.player2.id !== id) {
+        return
+      }
+
+      document.getElementById('game').style.display = 'grid'
+      document.getElementsByClassName('container')[0].style.display = 'flex'
+      document.getElementById('buscarfila').style.display = 'none'
+
+      game = data
+
+      // Exibe na tela qual player o usuário é
+      if (data.player1.id === id) {
+        document.getElementById('quem-e-o-jogador').innerText = `você é o player ${data.player1.boneco}`
+        game.voceeo = data.player1.boneco
+        jogadorEo = data.player1.boneco
+      } else {
+        document.getElementById('quem-e-o-jogador').innerText = `você é o player ${data.player2.boneco}`
+        game.voceeo = data.player2.boneco
+        jogadorEo = data.player2.boneco
+      }
+
+      if (data.vezAtual === jogadorEo) {
+        document.getElementById('vez-de-qual-jogador').innerText = 'Agora é a sua vez'
+      } else {
+        document.getElementById('vez-de-qual-jogador').innerText = 'Agora é a vez dele'
+      }
+
+    })
+
+    // Alguém fez um clique
+    // Atualiza o tabuleiro e a vez atual
+    socket.on('new-click', (data) => {
+      if (data.player1.id !== id && data.player2.id !== id) {
+        return
+      }
+
+      game.tabuleiro = data.tabuleiro
+      game.vezAtual = data.vezAtual
+      game.resultado = data.resultado
+
+
+      let htmlResultadoEVez = document.getElementById('vez-de-qual-jogador')
+      if (data.resultado.vitoria !== true && data.resultado.velha !== true) {
+        if (data.vezAtual === jogadorEo) {
+          htmlResultadoEVez.innerText = 'Agora é a sua vez'
+        } else {
+          htmlResultadoEVez.innerText = 'Agora é a vez dele'
+        }
+      } else if (data.resultado.vitoria === true) {
+        if(data.resultado.jogador === jogadorEo) {
+          htmlResultadoEVez.innerText = 'Parabens, você jogou muito!'
+        } else {
+          htmlResultadoEVez.innerText = 'Quase, jogou muito!'
+        }
+      } else if (data.resultado.velha === true) {
+        htmlResultadoEVez.innerText = 'É isso ai, a velha ganhou'
+      }
+    })
+
+    // Renderiza o tabuleiro
+    function renderScreen() {
+
+      if ((game?.resultado?.vitoria === false && game?.resultado?.velha === false ) || (game?.resultado?.vitoria === undefined && game?.resultado?.velha === undefined )) {
+        game?.tabuleiro?.map((item, i) => {
+            document.getElementsByClassName('btn')[i].textContent = item
+        })
+        requestAnimationFrame(renderScreen)
+      } else {
+        game?.tabuleiro?.map((item, i) => {
+          document.getElementsByClassName('btn')[i].textContent = item
+        })
+        if(game?.resultado?.vitoria  === true) {
+          //game?.resultado?.jogador
+          game?.resultado?.posicoes?.map(pos => {
+            pos.map(p => {
+              document.getElementsByClassName('btn')[p].style.background = 'white'
+              document.getElementsByClassName('btn')[p].style.color = 'purple'
+            })
+          })
+        } else if(game?.resultado?.velha  === true) {
+        }
+      }
+    }
+    requestAnimationFrame(renderScreen)
+
+
+  </script>
+</body>
+</html>

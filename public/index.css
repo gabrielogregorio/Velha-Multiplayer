@@ -1,0 +1,34 @@
+
+
+#screen1 {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: linear-gradient(#6611ff, #9900ff);
+}
+
+
+#screen1 button {
+  padding: 10px 25px;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  width: 250px;
+  font-size: 1.5rem;
+  margin: 10px 0;
+  border-radius: 20px;
+  transition: 0.2s;
+}
+
+
+#screen1 button:hover {
+  transform: scale(1.2);
+}
+
+#screen1 button a {
+  color: white;
+  text-decoration: none;
+}
