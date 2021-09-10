@@ -46,6 +46,9 @@ io.on('connection', (socket) => {
       // Retorna os dados de seção a ambos os usuários
       socket.emit('find-session', secoesConectadas[secaoGerada].retornarInstancia())
       socket.broadcast.emit('find-session', secoesConectadas[secaoGerada].retornarInstancia())
+      
+      
+      
     }
   })
 
@@ -56,11 +59,13 @@ io.on('connection', (socket) => {
   // Um clique foi enviado
   socket.on('new-click', (data) => {
       let jogada = secoesConectadas[data.secao].realizarJogada(socket.id, data.i)
-      if (jogada) {
-        // Envia os dados a ambos os usuários
-        socket.emit('new-click', secoesConectadas[data.secao].retornarInstancia())
-        socket.broadcast.emit('new-click', secoesConectadas[data.secao].retornarInstancia())
-    }
+      if (!jogada) { return }
+      let player1 = secoesConectadas[data.secao].retornarInstancia().player1
+      let player2 = secoesConectadas[data.secao].retornarInstancia().player2
+      
+      // Envia os dados a ambos os usuários
+      socket.emit('new-click', {jogada:data.i, player1, player2, quemfez:socket.id})
+      socket.broadcast.emit('new-click', {jogada:data.i, player1, player2, quemfez:socket.id})
   })
 
   socket.on('disconnect', () => {

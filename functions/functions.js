@@ -85,7 +85,7 @@ function verifyState(tabuleiro) {
 
   // Percorrer o tabuleiro para ver se tem algum campo ainda disponível
   for(let i = 0; i < tabuleiro.length; i++) {
-    if (tabuleiro[i] === ' ') {
+    if (tabuleiro[i] === '') {
       resultado = {vitoria:false, velha: false}
       return resultado
     }

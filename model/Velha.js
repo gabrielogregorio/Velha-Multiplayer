@@ -6,7 +6,7 @@ class Velha {
     this.player2 = null
     this.vezAtual = bonecoPlayer1
     this.resultado = { vitoria: false, velha: false }
-    this.tabuleiro = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ]
+    this.tabuleiro = ['', '', '', '', '', '', '', '', '', ]
   }
 
   filaVazia() {
@@ -35,7 +35,7 @@ class Velha {
 
     // É a vez do player
     if(this.vezAtual === player.boneco) {
-      if (this.tabuleiro[posicao] === ' ') {
+      if (this.tabuleiro[posicao] === '') {
         this.tabuleiro[posicao] = player.boneco
         this.trocarVez()
         this.resultado = verifyState(this.tabuleiro)

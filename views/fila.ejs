@@ -43,145 +43,133 @@
     </div>
   </div>
 
+  <script src="/js/velha.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    var socket = io()
-    var secao = ''
-    let jogo = {}
-    let jogadorEo = ''
+  var socket = io()
+  let jogo;
+  let voceEhO = ''
+  let id;
+  let secao;
 
-    function cancelarFila(){
-      socket.emit('cancel-queue', {secao})
-      window.location.href = '/'
+  function cancelarFila(){
+    socket.emit('cancel-queue', {secao})
+    window.location.href = '/'
+  }
+
+  // Novo usuário conectado
+  socket.emit('new-player', '')
+  socket.on('new-player', (data) => {
+    id = data.id
+  })
+
+  // Bsucar fila
+  socket.emit('send-queue', '')
+  socket.on('send-queue', (data) => {
+    secao = data.secao
+  })
+
+  // Adicionar listerners
+  for(let i = 0; i < 9; i++ ) {
+    document.getElementsByClassName('btn')[i]
+      .addEventListener('click', (event) => selecionarItem(i))
+  }
+
+  // Evento de clique em um botão
+  function selecionarItem(i) {
+    if (jogo.tabuleiro[i] === '' && jogo.vezAtual === voceEhO) {
+      if(!jogo.verificarVitoria() && !jogo.verificarVelha()) {
+        document.getElementsByClassName('btn')[i].textContent === voceEhO
+        console.log(jogo.realizarJogada(id, i))
+        socket.emit('new-click', {i, jogador:voceEhO, secao})
+      }
     }
+  }
 
+  // Servidor encontrou uma seção
+  socket.on('find-session', (data) => {
+    if (data.player1.id !== id && data.player2.id !== id) { return }
 
-    // Adiciona eventos 
-    let sizeButton = document.getElementsByClassName('btn').length
+    document.getElementById('jogo').style.display = 'grid'
+    document.getElementsByClassName('container')[0].style.display = 'flex'
+    document.getElementById('buscarfila').style.display = 'none'
+
+    jogo = new Velha(data.player1.id, data.player1.boneco)
+    jogo.definePlayer2(data.player2.id)
     
-    for(let i = 0; i < sizeButton; i++ ) {
-      document.getElementsByClassName('btn')[i]
-        .addEventListener('click', (event) => selecionarItem(i))
+    // Quem é o jogador
+    if (data.player1.id === id) {
+      voceEhO = data.player1.boneco
+    } else {
+      voceEhO = data.player2.boneco
     }
 
-    // Evento de clique em um botão
-    function selecionarItem(i) {
-      // Campo vazio e é a vez do jogador
-        if (document.getElementsByClassName('btn')[i].textContent === ' ' && jogo.vezAtual === jogo.voceeo) {
-          if(jogo?.resultado?.vitoria === false && jogo?.resultado?.velha === false) {
-            document.getElementsByClassName('btn')[i].textContent === jogo.voceeo
-            socket.emit('new-click', {i, jogador: jogo.voceeo, secao})
-          }
-        }
-      }
-    // Fim Adiciona eventos 
-
-    // Novo usuário conectado
-    socket.emit('new-player', '')
-    // Recebe a seção que o usuário está conectado e o identificador dele mesmo
-    socket.on('new-player', (data) => {
-      id = data.id
-    })
-
-
-    // Bsucar fila
-    socket.emit('send-queue', '')
-    socket.on('send-queue', (data) => {
-      secao = data.secao
-    })
-    
-
-
-    // Servidor encontrou uma seção
-    socket.on('find-session', (data) => {
-      if (data.player1.id !== id && data.player2.id !== id) {
-        return
-      }
-
-      document.getElementById('jogo').style.display = 'grid'
-      document.getElementsByClassName('container')[0].style.display = 'flex'
-      document.getElementById('buscarfila').style.display = 'none'
-
-      jogo = data
-
-      // Exibe na tela qual player o usuário é
-      if (data.player1.id === id) {
-        jogo.voceeo = data.player1.boneco
-        jogadorEo = data.player1.boneco
-      } else {
-        jogo.voceeo = data.player2.boneco
-        jogadorEo = data.player2.boneco
-      }
-
-      if (data.vezAtual === jogadorEo) {
-        document.getElementById('quem-joga').innerText = 'Agora é a sua vez'
-      } else {
-        document.getElementById('quem-joga').innerText = 'Agora é a vez dele'
-      }
-
-    })
-
-    // Alguém fez um clique
-    // Atualiza o tabuleiro e a vez atual
-    socket.on('new-click', (data) => {
-      if (data.player1.id !== id && data.player2.id !== id) {
-        return
-      }
-
-      jogo.tabuleiro = data.tabuleiro
-      jogo.vezAtual = data.vezAtual
-      jogo.resultado = data.resultado
-
-
-      let htmlResultadoEVez = document.getElementById('quem-joga')
-      if (data.resultado.vitoria !== true && data.resultado.velha !== true) {
-        if (data.vezAtual === jogadorEo) {
-          htmlResultadoEVez.innerText = 'Agora é a sua vez'
-        } else {
-          htmlResultadoEVez.innerText = 'Agora é a vez dele'
-        }
-      } else if (data.resultado.vitoria === true) {
-        if(data.resultado.jogador === jogadorEo) {
-          htmlResultadoEVez.innerText = 'Parabens, você jogou muito!'
-        } else {
-          htmlResultadoEVez.innerText = 'Quase, jogou muito!'
-        }
-      } else if (data.resultado.velha === true) {
-        document.getElementById('jogo').style.display = 'none'
-        document.getElementsByClassName('container')[0].style.display = 'none'
-        document.getElementById('deu-velha').style.display = 'flex'
-      }
-    })
-
-    function renderButtons() {
-      jogo?.tabuleiro?.map((item, i) => {
-        document.getElementsByClassName('btn')[i].textContent = item
-      })
+    if (data.vezAtual === voceEhO) {
+      document.getElementById('quem-joga').innerText = 'Agora é a sua vez'
+    } else {
+      document.getElementById('quem-joga').innerText = 'Agora é a vez dele'
     }
 
-    // Renderiza o tabuleiro
-    function renderScreen() {
-
-      if ((jogo?.resultado?.vitoria === false && jogo?.resultado?.velha === false ) || (jogo?.resultado?.vitoria === undefined && jogo?.resultado?.velha === undefined )) {
-        renderButtons()
-        requestAnimationFrame(renderScreen)
-      } else {
-        renderButtons()
-        if(jogo?.resultado?.vitoria  === true) {
-          //jogo?.resultado?.jogador
-          jogo?.resultado?.posicoes?.map(pos => {
-            pos.map(p => {
-              document.getElementsByClassName('btn')[p].style.background = 'white'
-              document.getElementsByClassName('btn')[p].style.color = 'purple'
-            })
-          })
-        } else if(jogo?.resultado?.velha  === true) {
-        }
-      }
-    }
     requestAnimationFrame(renderScreen)
+  })
 
+  // Alguém fez um clique
+  socket.on('new-click', (data) => {
+    if (data.player1.id !== id && data.player2.id !== id) {return }
+    if(data.quemfez !== id) {
+      jogo.realizarJogada(data.quemfez, data.jogada)
+    }
 
+    let htmlResultadoEVez = document.getElementById('quem-joga')
+    if (!jogo.verificarVitoria() && !jogo.verificarVelha()) {
+      if (jogo.vezAtual === voceEhO) {
+        htmlResultadoEVez.innerText = 'Agora é a sua vez'
+      } else {
+        htmlResultadoEVez.innerText = 'Agora é a vez dele'
+      }
+    } else if (jogo.verificarVitoria()) {
+      if(jogo.retornarInstancia().resultado.jogador === voceEhO) {
+        htmlResultadoEVez.innerText = 'Parabens, você jogou muito!'
+      } else {
+        htmlResultadoEVez.innerText = 'Quase, jogou muito!'
+      }
+    } else if (jogo.verificarVelha()) {
+      document.getElementById('jogo').style.display = 'none'
+      document.getElementsByClassName('container')[0].style.display = 'none'
+      document.getElementById('deu-velha').style.display = 'flex'
+    }
+  })
+
+  function renderButtons() {
+    jogo.retornarInstancia().tabuleiro?.map((valor, i) => {
+      if(valor === '') {
+          document.getElementsByClassName('btn')[i].style.color = 'transparent'
+          document.getElementsByClassName('btn')[i].textContent = 'A'
+        } else {
+          document.getElementsByClassName('btn')[i].textContent = valor
+          document.getElementsByClassName('btn')[i].style.color = 'white'
+        }
+    })
+  }
+
+  // Renderiza o tabuleiro
+  function renderScreen() {
+    if (!jogo.verificarVitoria() && !jogo.verificarVelha()) {
+      renderButtons()
+      requestAnimationFrame(renderScreen)
+    } else { 
+      renderButtons()
+      if(jogo.verificarVitoria()) {
+        jogo.verificarPosicoesVitoria().map(pos => {
+          pos.map(p => {
+            document.getElementsByClassName('btn')[p].style.background = 'white'
+            document.getElementsByClassName('btn')[p].style.color = 'purple'
+          })
+        })
+      } else if(jogo.verificarVelha()) {
+      }
+    }
+  }
   </script>
 </body>
 </html>

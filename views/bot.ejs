@@ -70,7 +70,7 @@
       if(!jogo.verificarVitoria() && !jogo.verificarVelha()) {
         setTimeout(() => {
           let escolha = Math.floor(Math.random() * 9)
-          while (jogo.retornarInstancia().tabuleiro[escolha] !== ' '){
+          while (jogo.retornarInstancia().tabuleiro[escolha] !== ''){
             escolha = Math.floor(Math.random() * 9)
           }
           let playerBot = playerDaVez === playerId1 ? playerId2 : playerId1
@@ -84,10 +84,18 @@
       let infoJogo = document.getElementById('quem-joga')
 
       if (!jogo.verificarVitoria() && !jogo.verificarVelha()) {
-        infoJogo.innerText = `Agora é a sua vez do ${jogo.vezAtual}`
+        if(jogo.vezAtual === 'x') {
+          infoJogo.innerText = `Agora é a sua vez`
+        } else {
+          infoJogo.innerText = `Agora é a vez do BOT`
+        }
 
       } else if (jogo.verificarVitoria()) {
-        infoJogo.innerText = 'Parabens, você jogou muito!'
+        if(jogo.vezAtual === 'x') {
+          infoJogo.innerText = `Quase, tente outra vez`
+        } else {
+          infoJogo.innerText = `Parabens, você jogou muito!`
+        }
 
       } else if (jogo.verificarVelha()) {
         document.getElementById('jogo').style.display = 'none'
@@ -100,7 +108,7 @@
 
     function renderizarBotoes() {
       jogo.retornarInstancia().tabuleiro.map((valor, i) => {
-        if(valor === ' ') {
+        if(valor === '') {
           document.getElementsByClassName('btn')[i].style.color = 'transparent'
           document.getElementsByClassName('btn')[i].textContent = 'A'
         } else {
