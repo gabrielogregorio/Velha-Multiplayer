@@ -18,17 +18,15 @@
     <button onclick="cancelarFila()" >Cancelar</button>
   </div>
 
-  <div id="deuvelha">
+  <div id="deu-velha">
     <img src="/velha.png" alt="">
     <button><a href="/">Voltar e Aceitar</a></button>
   </div>
 
-
   <div class="container">
-    <h1 id="quem-e-o-jogador"></h1>
-    <h2 id="vez-de-qual-jogador"></h2>
+    <h2 id="quem-joga"></h2>
 
-    <div id="game">
+    <div id="jogo">
       <button class="btn"></button>
       <button class="btn">X</button>
       <button class="btn">Y</button>
@@ -40,7 +38,7 @@
       <button class="btn">Y</button>
     </div>
 
-    <div id="gameAcoes">
+    <div id="jogo-acoes">
       <button><a href="/">Voltar</a></button>
     </div>
   </div>
@@ -49,7 +47,7 @@
   <script>
     var socket = io()
     var secao = ''
-    let game = {}
+    let jogo = {}
     let jogadorEo = ''
 
     function cancelarFila(){
@@ -69,10 +67,10 @@
     // Evento de clique em um botão
     function selecionarItem(i) {
       // Campo vazio e é a vez do jogador
-        if (document.getElementsByClassName('btn')[i].textContent === ' ' && game.vezAtual === game.voceeo) {
-          if(game?.resultado?.vitoria === false && game?.resultado?.velha === false) {
-            document.getElementsByClassName('btn')[i].textContent === game.voceeo
-            socket.emit('new-click', {i, jogador: game.voceeo, secao})
+        if (document.getElementsByClassName('btn')[i].textContent === ' ' && jogo.vezAtual === jogo.voceeo) {
+          if(jogo?.resultado?.vitoria === false && jogo?.resultado?.velha === false) {
+            document.getElementsByClassName('btn')[i].textContent === jogo.voceeo
+            socket.emit('new-click', {i, jogador: jogo.voceeo, secao})
           }
         }
       }
@@ -100,27 +98,25 @@
         return
       }
 
-      document.getElementById('game').style.display = 'grid'
+      document.getElementById('jogo').style.display = 'grid'
       document.getElementsByClassName('container')[0].style.display = 'flex'
       document.getElementById('buscarfila').style.display = 'none'
 
-      game = data
+      jogo = data
 
       // Exibe na tela qual player o usuário é
       if (data.player1.id === id) {
-        document.getElementById('quem-e-o-jogador').innerText = `você é o player ${data.player1.boneco}`
-        game.voceeo = data.player1.boneco
+        jogo.voceeo = data.player1.boneco
         jogadorEo = data.player1.boneco
       } else {
-        document.getElementById('quem-e-o-jogador').innerText = `você é o player ${data.player2.boneco}`
-        game.voceeo = data.player2.boneco
+        jogo.voceeo = data.player2.boneco
         jogadorEo = data.player2.boneco
       }
 
       if (data.vezAtual === jogadorEo) {
-        document.getElementById('vez-de-qual-jogador').innerText = 'Agora é a sua vez'
+        document.getElementById('quem-joga').innerText = 'Agora é a sua vez'
       } else {
-        document.getElementById('vez-de-qual-jogador').innerText = 'Agora é a vez dele'
+        document.getElementById('quem-joga').innerText = 'Agora é a vez dele'
       }
 
     })
@@ -132,12 +128,12 @@
         return
       }
 
-      game.tabuleiro = data.tabuleiro
-      game.vezAtual = data.vezAtual
-      game.resultado = data.resultado
+      jogo.tabuleiro = data.tabuleiro
+      jogo.vezAtual = data.vezAtual
+      jogo.resultado = data.resultado
 
 
-      let htmlResultadoEVez = document.getElementById('vez-de-qual-jogador')
+      let htmlResultadoEVez = document.getElementById('quem-joga')
       if (data.resultado.vitoria !== true && data.resultado.velha !== true) {
         if (data.vezAtual === jogadorEo) {
           htmlResultadoEVez.innerText = 'Agora é a sua vez'
@@ -151,14 +147,14 @@
           htmlResultadoEVez.innerText = 'Quase, jogou muito!'
         }
       } else if (data.resultado.velha === true) {
-        document.getElementById('game').style.display = 'none'
+        document.getElementById('jogo').style.display = 'none'
         document.getElementsByClassName('container')[0].style.display = 'none'
-        document.getElementById('deuvelha').style.display = 'flex'
+        document.getElementById('deu-velha').style.display = 'flex'
       }
     })
 
     function renderButtons() {
-      game?.tabuleiro?.map((item, i) => {
+      jogo?.tabuleiro?.map((item, i) => {
         document.getElementsByClassName('btn')[i].textContent = item
       })
     }
@@ -166,20 +162,20 @@
     // Renderiza o tabuleiro
     function renderScreen() {
 
-      if ((game?.resultado?.vitoria === false && game?.resultado?.velha === false ) || (game?.resultado?.vitoria === undefined && game?.resultado?.velha === undefined )) {
+      if ((jogo?.resultado?.vitoria === false && jogo?.resultado?.velha === false ) || (jogo?.resultado?.vitoria === undefined && jogo?.resultado?.velha === undefined )) {
         renderButtons()
         requestAnimationFrame(renderScreen)
       } else {
         renderButtons()
-        if(game?.resultado?.vitoria  === true) {
-          //game?.resultado?.jogador
-          game?.resultado?.posicoes?.map(pos => {
+        if(jogo?.resultado?.vitoria  === true) {
+          //jogo?.resultado?.jogador
+          jogo?.resultado?.posicoes?.map(pos => {
             pos.map(p => {
               document.getElementsByClassName('btn')[p].style.background = 'white'
               document.getElementsByClassName('btn')[p].style.color = 'purple'
             })
           })
-        } else if(game?.resultado?.velha  === true) {
+        } else if(jogo?.resultado?.velha  === true) {
         }
       }
     }

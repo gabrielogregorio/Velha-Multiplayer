@@ -4,24 +4,23 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="/fila.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
-    <title>Jogo da velha</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/fila.css">
+  <title>Jogue contra você mesmo!</title>
 </head>
 <body>
-  <div id="deuvelha">
+  <div id="deu-velha">
     <img src="/velha.png" alt="">
     <button><a href="/">Voltar e Aceitar</a></button>
   </div>
 
   <div class="container">
-    <h1 id="quem-e-o-jogador"></h1>
-    <h2 id="vez-de-qual-jogador">Agora é a sua vez</h2>
+    <h2 id="quem-joga">Agora é a sua vez</h2>
 
-    <div id="game">
+    <div id="jogo">
       <button class="btn"> </button>
       <button class="btn"> </button>
       <button class="btn"> </button>
@@ -33,221 +32,102 @@
       <button class="btn"> </button>
     </div>
 
-    <div id="gameAcoes">
+    <div id="jogo-acoes">
       <button><a href="/">Voltar</a></button>
     </div>
   </div>
 
+  <script src="/js/velha.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-function testarPosicoes(tabuleiro, posicoes, jogador) {
-  let vitoria = true
-  for (let i = 0; i < posicoes.length ; i++ ) {
-    if (tabuleiro[posicoes[i]] !== jogador) {
-      vitoria = false
-    }
-  }
-  return {vitoria, posicoes}
-}
-
-function testeJogador(tabuleiro, jogador) {
-  // {vitoria: false, velha: false, posicoes = [[1,2,3], [3, 2, 1]]}
-  let vitoria = {vitoria: false, velha: false, posicoes: []} 
-
-  let teste;
-
-  // Posicoes laterais
-  teste = testarPosicoes(tabuleiro, [0, 1, 2], jogador)
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-
-
-  teste = testarPosicoes(tabuleiro, [3, 4, 5], jogador) 
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-  
-  teste = testarPosicoes(tabuleiro, [6, 7, 8], jogador)
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-
-
-  // Posicoes verticais
-  teste = testarPosicoes(tabuleiro, [0, 3, 6], jogador)
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-
-  teste = testarPosicoes(tabuleiro, [1, 4, 7], jogador)
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-
-  teste = testarPosicoes(tabuleiro, [2, 5, 8], jogador)
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-
-  // Posicoes transversais
-  teste = testarPosicoes(tabuleiro, [0, 4, 8], jogador)
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-
-  teste = testarPosicoes(tabuleiro, [2, 4, 6], jogador)
-  if(teste.vitoria) {    
-    vitoria.posicoes.push(teste.posicoes)
-  }
-
-  if(vitoria.posicoes.length !== 0) {
-    vitoria.vitoria = true
-  }
-  return vitoria
-}
-
-function verifyState(tabuleiro) {
-  let resultado;
-  resultado = testeJogador(tabuleiro, 'x')
-  if (resultado.vitoria === true) {
-    resultado.jogador = 'x'
-    resultado.velha = false
-    return resultado
-  }
-
-  resultado = testeJogador(tabuleiro, 'y')
-  if (resultado.vitoria === true) {
-    resultado.jogador = 'y'
-    resultado.velha = false
-    return resultado
-  }
-
-  // Percorrer o tabuleiro para ver se tem algum campo ainda disponível
-  for(let i = 0; i < tabuleiro.length; i++) {
-    if (tabuleiro[i] === ' ') {
-      resultado = {vitoria:false, velha: false}
-      return resultado
-    }
-  }
-
-  // Nenhum campo disponível, deu velha
-  resultado = {vitoria:false, velha: true}
-  return resultado
-}
-
-
-
-
-
-
-
-
-
-
-
-
-    document.getElementById('game').style.display = 'grid'
+    // Torna as interfaces visíveis
+    document.getElementById('jogo').style.display = 'grid'
     document.getElementsByClassName('container')[0].style.display = 'flex'
 
-    let game = {
-        player1: {id: '123', boneco:'x'},
-        player2: {id: '456', boneco:'y'}, // bot
-        vezAtual: 'x',
-        voceeo: 'x',
-        resultado: { vitoria: false, velha: false },
-        tabuleiro: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ]
-      }
-    let jogadorEo = 'x'
+    // Usuário 1 e 2
+    let playerId1 = '123'
+    let playerId2 = '456'
+    let playerDaVez = playerId1
 
-
-
-    let sizeButton = document.getElementsByClassName('btn').length
+    // Instancia do jogo
+    let jogo = new Velha(playerId1, 'x')
+    jogo.definePlayer2(playerId2)
     
-    for(let i = 0; i < sizeButton; i++ ) {
+    for(let i = 0; i < 9; i++ ) {
       document.getElementsByClassName('btn')[i]
-        .addEventListener('click', (event) => selecionarItem(i))
+        .addEventListener('click', (event) => selecionarBloco(i))
     }
 
-    // Evento de clique em um botão
-    function selecionarItem(i) {
-      console.log('i', game)
-      // Campo vazio e é a vez do jogador
-        if (
-          document.getElementsByClassName('btn')[i].textContent === ' ' &&
-          game.vezAtual === game.voceeo &&
-          game?.resultado?.vitoria === false &&
-          game?.resultado?.velha === false) {
-            game.tabuleiro[i] = game.vezAtual
-            game.vezAtual = game.vezAtual === 'x' ? 'y' : 'x'
-            respostaBot()
-        }
+    function selecionarBloco(i) {
+      console.log(i)
+      if (jogo.realizarJogada(playerDaVez, i)) {
+        atualizarJogo()
+        respostaBot()
       }
-
-      function respostaBot() {
-        updateState()
-
+    }
+    
+    function respostaBot() {
+      if(!jogo.verificarVitoria() && !jogo.verificarVelha()) {
         setTimeout(() => {
           let escolha = Math.floor(Math.random() * 9)
-          while (game.tabuleiro[escolha] !== ' '){
+          while (jogo.retornarInstancia().tabuleiro[escolha] !== ' '){
             escolha = Math.floor(Math.random() * 9)
           }
-          game.tabuleiro[escolha] = game.vezAtual
-          game.vezAtual = game.vezAtual === 'x' ? 'y' : 'x'
-          updateState()          
-        }, 250);
+          let playerBot = playerDaVez === playerId1 ? playerId2 : playerId1
+          jogo.realizarJogada(playerBot, escolha)
+          atualizarJogo()     
+        }, 1000);
       }
-
-      function updateState() {
-        game.resultado = verifyState(game.tabuleiro)
-        let htmlResultadoEVez = document.getElementById('vez-de-qual-jogador')
-        if (game.resultado.vitoria !== true && game.resultado.velha !== true) {
-          if (game.vezAtual === jogadorEo) {
-            htmlResultadoEVez.innerText = 'Agora é a sua vez'
-          } else {
-            htmlResultadoEVez.innerText = 'Agora é a vez dele'
-          }
-        } else if (game.resultado.vitoria === true) {
-          if(game.resultado.jogador === jogadorEo) {
-            htmlResultadoEVez.innerText = 'Parabens, você jogou muito!'
-          } else {
-            htmlResultadoEVez.innerText = 'Quase, jogou muito!'
-          }
-        } else if (game.resultado.velha === true) {
-          document.getElementById('game').style.display = 'none'
-          document.getElementsByClassName('container')[0].style.display = 'none'
-          document.getElementById('deuvelha').style.display = 'flex'
-        }
     }
-    updateState()
-    function renderButtons() {
-      game?.tabuleiro?.map((item, i) => {
-        document.getElementsByClassName('btn')[i].textContent = item
+
+    function atualizarJogo() {
+      let infoJogo = document.getElementById('quem-joga')
+
+      if (!jogo.verificarVitoria() && !jogo.verificarVelha()) {
+        infoJogo.innerText = `Agora é a sua vez do ${jogo.vezAtual}`
+
+      } else if (jogo.verificarVitoria()) {
+        infoJogo.innerText = 'Parabens, você jogou muito!'
+
+      } else if (jogo.verificarVelha()) {
+        document.getElementById('jogo').style.display = 'none'
+        document.getElementsByClassName('container')[0].style.display = 'none'
+        document.getElementById('deu-velha').style.display = 'flex'
+      }
+    }
+
+    atualizarJogo()
+
+    function renderizarBotoes() {
+      jogo.retornarInstancia().tabuleiro.map((valor, i) => {
+        if(valor === ' ') {
+          document.getElementsByClassName('btn')[i].style.color = 'transparent'
+          document.getElementsByClassName('btn')[i].textContent = 'A'
+        } else {
+          document.getElementsByClassName('btn')[i].textContent = valor
+          document.getElementsByClassName('btn')[i].style.color = 'white'
+        }
       })
     }
 
-    // Renderiza o tabuleiro
-    function renderScreen() {
-      if ((game?.resultado?.vitoria === false && game?.resultado?.velha === false ) || (game?.resultado?.vitoria === undefined && game?.resultado?.velha === undefined )) {
-        renderButtons()
-        requestAnimationFrame(renderScreen)
+    function renderizarJogo() {
+      if (!jogo.verificarVitoria() && !jogo.verificarVelha() ) {
+        renderizarBotoes()
+        requestAnimationFrame(renderizarJogo)
       } else {
-        renderButtons()
-        if(game?.resultado?.vitoria  === true) {
-          //game?.resultado?.jogador
-          game?.resultado?.posicoes?.map(pos => {
-            pos.map(p => {
-              document.getElementsByClassName('btn')[p].style.background = 'white'
-              document.getElementsByClassName('btn')[p].style.color = 'purple'
+        renderizarBotoes()
+        if(jogo.verificarVitoria()) {
+          jogo.verificarPosicoesVitoria().map(posicoes => {
+            posicoes.map(pos => {
+              document.getElementsByClassName('btn')[pos].style.background = 'white'
+              document.getElementsByClassName('btn')[pos].style.color = 'purple'
             })
           })
-        } else if(game?.resultado?.velha  === true) {
+        } else if(jogo.verificarVelha()) {
         }
       }
     }
-    requestAnimationFrame(renderScreen)
-
-
+    requestAnimationFrame(renderizarJogo)
   </script>
 </body>
 </html>

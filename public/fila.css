@@ -1,18 +1,3 @@
-.container {
-  padding: 2%;
-  font-size: 1.5rem;
-  color: #9900ff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  display: none;
-}
-
-.container h1 {
-  font-size: 2rem;
-}
-
 #buscarfila {
   height: 100%;
   padding: 0;
@@ -42,7 +27,6 @@
   text-align: center;
 }
 
-
 #buscarfila button{
   background-color: transparent;
   font-size: 2rem;
@@ -57,61 +41,93 @@
 
 
 
-#game {
-  flex-grow: 1;
+.container {
+  height: 100vh;
+  padding: 2%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #9900ff;
+  display: none;
+}
+
+.container h1 {
+  font-size: 2rem;
+}
+
+.container h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+#jogo {
+  border-radius: 20px;
+  background: linear-gradient(#9900ff, #6611ff);
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-column-gap: 10px;
   grid-row-gap: 10px;
   width: 100%;
-  height: 100%;
   display: none;
-  box-shadow: 0px 0px 6px 6px rgba(0, 0, 0, 0.1);
 }
 
-#game button {
+#jogo button {
   width: 100%;
-  height: 100%;
+  background-color: transparent;
   outline: none;
+  border: 2px solid white;
   font-size: 2rem;
   color: white;
-  border: 2px solid white;
   cursor: pointer;
-  transition: 0.3s;
+  padding: 30px 0;
 }
 
-#game button:hover {
+
+#jogo button:hover {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-#game button:nth-child(3n+0) { border-right: none; }/*  Pega a parte da direita */
-#game button:nth-child(3n+1) { border-left: none; } /*  Pega a parte da esquerda */
-#game button:nth-child(n+7) { border-bottom: none; } /*  Pega a parte de baixo */
-#game button:nth-child(1) {border-top: none;} /*  Pega a parte de cima */
-#game button:nth-child(2) { border-top: none;} /*  Pega a parte de cima */
-#game button:nth-child(3) { border-top: none;} /*  Pega a parte de cima */
+#jogo button:nth-child(3n+0) { border-right: none; }/*  Pega a parte da direita */
+#jogo button:nth-child(3n+1) { border-left: none; } /*  Pega a parte da esquerda */
+#jogo button:nth-child(n+7) { border-bottom: none; } /*  Pega a parte de baixo */
+#jogo button:nth-child(1) {border-top: none;} /*  Pega a parte de cima */
+#jogo button:nth-child(2) { border-top: none;} /*  Pega a parte de cima */
+#jogo button:nth-child(3) { border-top: none;} /*  Pega a parte de cima */
+#jogo button:nth-child(1) { border-radius: 20px 0 0 0} /*  Pega a parte de cima */
+#jogo button:nth-child(3) { border-radius: 0 20px 0 0} /*  Pega a parte de cima */
+#jogo button:nth-child(9) { border-radius: 0 0 20px 0} /*  Pega a parte de cima */
+#jogo button:nth-child(7) { border-radius: 0 0 0 20px} /*  Pega a parte de cima */
 
-#gameAcoes {
+#jogo-acoes {
+  margin-top: 20px;
   width: 100%;
+  max-width: 500px;
   display: flex;
-  justify-content: space-between;
 }
 
-#gameAcoes button {
+#jogo-acoes button {
+  border-radius: 20px;
   padding: 10px 25px;
   border: none;
   outline: none;
-  background-color: transparent;
-  color: #9900ff;
+  background: linear-gradient(#9900ff, #6611ff);
   font-size: 1.5rem;
 }
 
-#deuvelha {
-  height: 100%;
+#jogo-acoes button a {
+  color: white;
+  text-decoration: none;
+}
+
+
+#deu-velha {
+  background: linear-gradient(90deg, #11aaff, #7703b9, #ff11aa);
+  width: 100%;
   padding: 0;
   margin: 0;
-  width: 100%;
-  background: linear-gradient(90deg, #11aaff, #7703b9, #ff11aa);
   color: white;
   display: flex;
   align-items: center;
@@ -120,7 +136,7 @@
   display: none;
 }
 
-#deuvelha img {
+#deu-velha img {
   width: 80%;
   margin: 0 auto;
   animation: velha 1s infinite alternate;
@@ -140,7 +156,7 @@
   100% { transform: rotate(0deg)}
 }
 
-#deuvelha button {
+#deu-velha button {
   background-color: transparent;
   font-size: 2rem;
   padding: 10px 25px;
@@ -151,13 +167,13 @@
   color: white;
 }
 
-#deuvelha button a {
+#deu-velha button a {
   color: white;
   text-decoration: none;
 }
 
 @media screen and (min-width: 700px) {
-  .container {
+  #jogo {
     max-width: 500px;
     margin: 0 auto;
   }
