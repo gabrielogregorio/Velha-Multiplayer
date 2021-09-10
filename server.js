@@ -5,9 +5,9 @@ const io = require('socket.io')(http)
 const { v4 } = require('uuid');
 const favicon = require('serve-favicon');
 const path = require('path');
-const { verifyState } = require('./functions/functions')
 const PORT = process.env.PORT || 3000
 const renderPagesController = require('./controllers/renderPagesControllers')
+const {Velha} = require('./model/Velha')
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
@@ -16,7 +16,6 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
 app.use('/', renderPagesController)
-
 
 const secoesConectadas = {}
 
@@ -31,43 +30,22 @@ io.on('connection', (socket) => {
     let secaoGerada = v4()
 
     for(secaoId in secoesConectadas) {
-      let player1 = secoesConectadas[secaoId].player1
-      let player2 = secoesConectadas[secaoId].player2
-
-      // Seção precisando de um player 2
-      if (player2 === undefined) {
+      if (secoesConectadas[secaoId].filaVazia()) {
         encontrouSecao = true
-        secaoGerada = secaoId // Sobrescreve a seção
-
-        
-        // Adiciona o player 2
-        secoesConectadas[secaoId].player2 = {
-          id:socket.id,
-          resultado: {
-            velha:false,
-            vitoria:false
-          },
-          boneco: player1.boneco === 'x' ? 'y' : 'x' }
+        secaoGerada = secaoId
+        secoesConectadas[secaoId].definePlayer2(socket.id)
       }
     }
 
-    // Retornar o id da seção e o código do usuário
     socket.emit('send-queue', {secao:secaoGerada})
 
-    // Não tinha seção e o usuário terá que esperar
     if (!encontrouSecao) {
-      // Cria uma seção
-      secoesConectadas[secaoGerada] = {
-        player1: {id: socket.id, boneco:'x'},
-        vezAtual: 'x',
-        resultado: { vitoria: false, velha: false },
-        tabuleiro: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ]
-      }
+      secoesConectadas[secaoGerada] = new Velha(socket.id, 'x')
     } else { // Encontrou uma seção e já pode jogar
 
       // Retorna os dados de seção a ambos os usuários
-      socket.emit('find-session', secoesConectadas[secaoGerada])
-      socket.broadcast.emit('find-session', secoesConectadas[secaoGerada])
+      socket.emit('find-session', secoesConectadas[secaoGerada].retornarInstancia())
+      socket.broadcast.emit('find-session', secoesConectadas[secaoGerada].retornarInstancia())
     }
   })
 
@@ -77,29 +55,11 @@ io.on('connection', (socket) => {
 
   // Um clique foi enviado
   socket.on('new-click', (data) => {
-      // Posição do tabuleiro é vazia ??
-      // É a vez do jogador ??
-      // Essas informações podem ser manipuladas pelo usuário, mas 
-      // Não é o foco por enquanto
-      if (
-        secoesConectadas[data.secao].tabuleiro[data.i] === ' ' &&
-        secoesConectadas[data.secao].vezAtual === data.jogador && 
-        secoesConectadas[data.secao].resultado.vitoria === false
-        && secoesConectadas[data.secao].resultado.velha === false) {
-
-      // Troca a vez atual
-      secoesConectadas[data.secao].vezAtual = secoesConectadas[data.secao].vezAtual === 'x' ? 'y' : 'x'
-
-      // Marca a jogada no tabuleiro
-      secoesConectadas[data.secao].tabuleiro[data.i] = data.jogador  
-
-      // Verifica o resultado
-      let resultado = verifyState(secoesConectadas[data.secao].tabuleiro)
-      secoesConectadas[data.secao].resultado = resultado
-
-      // Envia os dados a ambos os usuários
-      socket.emit('new-click', secoesConectadas[data.secao])
-      socket.broadcast.emit('new-click', secoesConectadas[data.secao])
+      let jogada = secoesConectadas[data.secao].realizarJogada(socket.id, data.i)
+      if (jogada) {
+        // Envia os dados a ambos os usuários
+        socket.emit('new-click', secoesConectadas[data.secao].retornarInstancia())
+        socket.broadcast.emit('new-click', secoesConectadas[data.secao].retornarInstancia())
     }
   })
 

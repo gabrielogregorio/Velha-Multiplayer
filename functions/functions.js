@@ -67,7 +67,6 @@ function testeJogador(tabuleiro, jogador) {
 }
 
 
-
 function verifyState(tabuleiro) {
   let resultado;
   resultado = testeJogador(tabuleiro, 'x')
@@ -84,8 +83,6 @@ function verifyState(tabuleiro) {
     return resultado
   }
 
-
-  console.log(tabuleiro)
   // Percorrer o tabuleiro para ver se tem algum campo ainda disponível
   for(let i = 0; i < tabuleiro.length; i++) {
     if (tabuleiro[i] === ' ') {
@@ -93,8 +90,6 @@ function verifyState(tabuleiro) {
       return resultado
     }
   }
-
-
 
   // Nenhum campo disponível, deu velha
   resultado = {vitoria:false, velha: true}
